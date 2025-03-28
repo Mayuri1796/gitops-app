@@ -1,3 +1,29 @@
+name: GitOps Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      - name: Apply Kubernetes Manifests
+        run: |
+          kubectl apply -f manifests/
+
+      - name: Deploy Helm Chart
+        run: |
+          helm upgrade --install my-app charts/app
+
 name: GitOps Deployment
 
 on:
@@ -22,7 +48,7 @@ jobs:
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
-          echo "${Mayuri@17}" | docker login -u "${mayuri1702}" --password-stdin
+          echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USER}" --password-stdin
           docker build -t your-docker-image:latest .
           docker push your-docker-image:latest
 
@@ -33,4 +59,3 @@ jobs:
           git config user.email "actions@github.com"
           git commit -am "Update image tag"
           git push origin main
-
